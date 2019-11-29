@@ -1,9 +1,10 @@
-import React, {Fragment} from 'react';
+import React, {Fragment, useState} from 'react';
 import {Card, CardBody, CardTitle} from 'reactstrap';
-import VectorMapsBasic from './Basic'
+import VectorMapsBasic from './Basic';
 
-class VectorMapsExample extends React.Component {
-  render() {
+const VectorMapsExample=()=> {
+  const [content, setContent] = useState("");
+
     return (
       <Fragment>
         <Card className="main-card mb-2">
@@ -16,7 +17,6 @@ class VectorMapsExample extends React.Component {
         </Card>
       </Fragment>
     )
-  }
-}
+};
 
 export default VectorMapsExample;
