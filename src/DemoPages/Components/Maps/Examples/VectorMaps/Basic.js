@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Fragment} from 'react';
 import {ComposableMap, Geographies, Geography, ZoomableGroup} from "react-simple-maps"
 import world from './Static/world-50m.json';
 
@@ -7,16 +7,24 @@ class VectorMapsBasic extends React.Component {
     super(props);
     this.state = {
       name: '',
-      country: [],
-      url: 'http://api.weatherstack.com/current?access_key=30bcd5f592fe6f09bccbb0ceb6e7becb&query=Yerevan'
-    }
+      country: []
+    };
   }
 
   getInfo = () => {
-    const url = this.state.url;
     const name = this.state.name;
-    let k = url.replace('Yerevan', name);
-    console.log(k);
+    const nextUrl = `http://api.weatherstack.com/current?access_key=30bcd5f592fe6f09bccbb0ceb6e7becb&query=${name}`;
+    this.fetchUrl(nextUrl);
+
+    setTimeout(this.alertInfo, 1000);
+    this.setState({country: []})
+  };
+
+  alertInfo = () => {
+    alert(`Country: ${this.state.name}
+            Temperature: ${this.state.country.temperature}°C
+            Forecast: ${this.state.country.weather_descriptions}`
+    );
   };
 
   fetchUrl(url) {
@@ -29,51 +37,56 @@ class VectorMapsBasic extends React.Component {
       })
       .then((result) => {
         const data = result;
-        this.setState({country: data, name:''});
+        this.setState({country: data.current});
       });
   }
 
   render() {
-    const {url, name} = this.state;
+    const {country, name} = this.state;
     return (
-      <ComposableMap projectionConfig={{scale: 200}} style={{width: "80%", height: "auto"}}>
-        <ZoomableGroup>
-          <Geographies geography={world}>
-            {(geographies, projection) => geographies.map((geo, i) => geo.id !== "ATA" && (
-              <Geography
-                onClick={() => {
-                  this.setState({name: geo.properties.name});
-                  this.getInfo();
-                }}
+      <Fragment>
+        <div style={{height:'70px', backgroundColor:'#adb5bd'}}>
 
-                key={i}
-                geography={geo}
-                projection={projection}
-                style={{
-                  default: {
-                    fill: "#e9ecef",
-                    stroke: "#adb5bd",
-                    strokeWidth: 0.75,
-                    outline: "none",
-                  },
-                  hover: {
-                    fill: "#adb5bd",
-                    stroke: "#adb5bd",
-                    strokeWidth: 0.75,
-                    outline: "none",
-                  },
-                  pressed: {
-                    fill: "#3f6ad8",
-                    stroke: "#adb5bd",
-                    strokeWidth: 0.75,
-                    outline: "none",
-                  },
-                }}
-              />
-            ))}
-          </Geographies>
-        </ZoomableGroup>
-      </ComposableMap>
+        </div>
+
+        <!--ComposableMap, Geographies, Geography, ZoomableGroup are components from React Simple Map.
+        We take the name of the country on Click event, change name state and call getInfo function-->
+
+        <ComposableMap projectionConfig={{scale: 140}} style={{width: "100%", height: "auto", marginTop:'30px'}}>
+          <ZoomableGroup>
+            <Geographies geography={world}>
+              {(geographies, projection) => geographies.map((geo, i) => geo.id !== "ATA" && (
+                <Geography
+                  onClick={() => { this.setState({name: geo.properties.name}, this.getInfo) }}
+                  key={i}
+                  geography={geo}
+                  projection={projection}
+                  style={{
+                    default: {
+                      fill: "#e9ecef",
+                      stroke: "#adb5bd",
+                      strokeWidth: 0.75,
+                      outline: "none",
+                    },
+                    hover: {
+                      fill: "#adb5bd",
+                      stroke: "#adb5bd",
+                      strokeWidth: 0.75,
+                      outline: "none",
+                    },
+                    pressed: {
+                      fill: "#3f6ad8",
+                      stroke: "#adb5bd",
+                      strokeWidth: 0.75,
+                      outline: "none",
+                    },
+                  }}
+                />
+              ))}
+            </Geographies>
+          </ZoomableGroup>
+        </ComposableMap>
+      </Fragment>
     )
   }
 }
