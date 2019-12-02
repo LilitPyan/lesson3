@@ -7,24 +7,17 @@ class VectorMapsBasic extends React.Component {
     super(props);
     this.state = {
       name: '',
-      country: []
+      country: {},
+      loading: true,
     };
   }
 
   getInfo = () => {
     const name = this.state.name;
     const nextUrl = `http://api.weatherstack.com/current?access_key=30bcd5f592fe6f09bccbb0ceb6e7becb&query=${name}`;
-    this.fetchUrl(nextUrl);
-
-    setTimeout(this.alertInfo, 1000);
-    this.setState({country: []})
-  };
-
-  alertInfo = () => {
-    alert(`Country: ${this.state.name}
-            Temperature: ${this.state.country.temperature}°C
-            Forecast: ${this.state.country.weather_descriptions}`
-    );
+    this.setState({ loading: true }, () => {
+      this.fetchUrl(nextUrl);
+    });
   };
 
   fetchUrl(url) {
@@ -36,21 +29,25 @@ class VectorMapsBasic extends React.Component {
         return response.json();
       })
       .then((result) => {
-        const data = result;
-        this.setState({country: data.current});
+        this.setState({
+          country: result.current,
+          loading: false,
+        });
       });
   }
 
   render() {
-    const {country, name} = this.state;
+    const { country, name, loading } = this.state;
     return (
       <Fragment>
-        <div style={{height:'70px', backgroundColor:'#adb5bd'}}>
-
+        <p>Weather forecast</p>
+        <div style={{height:'30px', backgroundColor:'#adb5bd',paddingLeft:'20px'}}>
+          {!loading && (
+            ` Country: ${name}_______________
+              Temperature: ${country.temperature}°C_________________
+              Forecast: ${country.weather_descriptions}`
+          )}
         </div>
-
-        <!--ComposableMap, Geographies, Geography, ZoomableGroup are components from React Simple Map.
-        We take the name of the country on Click event, change name state and call getInfo function-->
 
         <ComposableMap projectionConfig={{scale: 140}} style={{width: "100%", height: "auto", marginTop:'30px'}}>
           <ZoomableGroup>
