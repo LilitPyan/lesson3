@@ -1,6 +1,10 @@
-import React, {Fragment} from 'react';
+import React, {Fragment, Component, Suspense, lazy} from 'react';
 import {ComposableMap, Geographies, Geography, ZoomableGroup} from "react-simple-maps"
 import world from './Static/world-50m.json';
+import axios from 'axios';
+import Preloader from "../Preloader/Preloader";
+
+const MainArea = lazy(() => import('../MainArea/MainArea'));
 
 class VectorMapsBasic extends React.Component {
   constructor(props) {
@@ -8,14 +12,14 @@ class VectorMapsBasic extends React.Component {
     this.state = {
       name: '',
       country: {},
-      loading: true,
+      loading: true
     };
   }
 
-  getInfo = () => {
+  /*getInfo = () => {
     const name = this.state.name;
     const nextUrl = `http://api.weatherstack.com/current?access_key=30bcd5f592fe6f09bccbb0ceb6e7becb&query=${name}`;
-    this.setState({ loading: true }, () => {
+    this.setState({loading: true}, () => {
       this.fetchUrl(nextUrl);
     });
   };
@@ -34,27 +38,60 @@ class VectorMapsBasic extends React.Component {
           loading: false,
         });
       });
-  }
+  }*/
+
+
+  getInfo = () => {
+    const name = this.state.name;
+    const nextUrl = `http://api.weatherstack.com/current?access_key=30bcd5f592fe6f09bccbb0ceb6e7becb&query=${name}`;
+    axios.get(nextUrl)
+      .then(res => {
+        const data = res.data.current;
+        this.setState({
+          country: data,
+          loading: false
+        })
+      });
+  };
+
 
   render() {
-    const { country, name, loading } = this.state;
+    const {country, name, loading} = this.state;
+    console.log(this.state.country);
     return (
       <Fragment>
-        <p>Weather forecast</p>
-        <div style={{height:'30px', backgroundColor:'#adb5bd',paddingLeft:'20px'}}>
-          {!loading && (
-            ` Country: ${name}_______________
-              Temperature: ${country.temperature}°C_________________
-              Forecast: ${country.weather_descriptions}`
-          )}
+        <div style={{
+          height: '160px',
+          width: '230px',
+          backgroundColor: 'whitesmoke',
+          paddingLeft: '20px',
+          borderStyle: 'groove'
+        }}>
+          {!loading &&
+          <div style={{ display:'grid'}}>
+            <span style={{ paddingTop: '6px', fontSize:'20px'}}>
+              Weather forecast
+            </span>
+            <span style={{ paddingTop: '6px' }}>
+              Country: {name}
+            </span>
+            <span style={{ paddingTop: '6px' }}>
+              Temperature:{country.temperature}°C
+            </span>
+            <span style={{ paddingTop: '6px' }}>
+              Forecast: {country.weather_descriptions}
+            </span>
+          </div>
+          }
         </div>
-
-        <ComposableMap projectionConfig={{scale: 140}} style={{width: "100%", height: "auto", marginTop:'30px'}}>
+        <ComposableMap projectionConfig={{scale: 140}} style={{width: "100%", height: "auto", marginTop: '30px'}}>
           <ZoomableGroup>
             <Geographies geography={world}>
               {(geographies, projection) => geographies.map((geo, i) => geo.id !== "ATA" && (
                 <Geography
-                  onClick={() => { this.setState({name: geo.properties.name}, this.getInfo) }}
+                  onClick={() => {
+                    this.setState({name: geo.properties.name}, this.getInfo)
+                  }}
                   key={i}
                   geography={geo}
                   projection={projection}
@@ -86,6 +123,7 @@ class VectorMapsBasic extends React.Component {
       </Fragment>
     )
   }
+
 }
 
 export default VectorMapsBasic;
